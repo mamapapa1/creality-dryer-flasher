@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+# Python
+__pycache__/
+*.pyc
+*.pyo
+# локальные бэкапы прошивок (снятые через --dump)
+backup*.bin
+*_backup.bin
+my_*.bin
