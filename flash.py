@@ -957,8 +957,33 @@ def t(msgid, **kw):
         return s
 
 
-def c(text, color):
+def _init_color():
+    """Decide whether to use ANSI color. On Windows, try to enable VT
+    processing so escapes render in cmd.exe instead of showing as garbage;
+    if that fails, fall back to no color."""
     if os.environ.get("NO_COLOR") or not sys.stdout.isatty():
+        return False
+    if sys.platform.startswith("win"):
+        try:
+            import ctypes
+            k = ctypes.windll.kernel32
+            h = k.GetStdHandle(-11)              # STD_OUTPUT_HANDLE
+            mode = ctypes.c_uint32()
+            if not k.GetConsoleMode(h, ctypes.byref(mode)):
+                return False
+            # ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
+            if not k.SetConsoleMode(h, mode.value | 0x0004):
+                return False
+        except Exception:
+            return False
+    return True
+
+
+USE_COLOR = _init_color()
+
+
+def c(text, color):
+    if not USE_COLOR:
         return text
     return f"{color}{text}{RST}"
 
